@@ -1,0 +1,41 @@
+{
+  "name": "backend-new",
+  "version": "1.0.0",
+  "description": "Backend Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.3",
+    "@fullcalendar/daygrid": "^6.1.14",
+    "@fullcalendar/interaction": "^6.1.14",
+    "@fullcalendar/react": "^6.1.14",
+    "@fullcalendar/timegrid": "^6.1.14",
+    "@google-cloud/text-to-speech": "^5.3.0",
+    "axios": "^1.7.2",
+    "axios-retry": "^4.4.1",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "form-data": "^4.0.0",
+    "fs": "^0.0.1-security",
+    "google-tts-api": "^2.0.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.8.0",
+    "mongoose": "^8.5.1",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.14",
+    "nodemon": "^3.1.4",
+    "openai": "^4.52.5",
+    "passport": "^0.7.0",
+    "path": "^0.12.7",
+    "uuid": "^10.0.0"
+  }
+}
