@@ -1,7 +1,7 @@
 const { MongoClient } = require('mongodb');
 
 // MongoDB connection URI
-const uri = 'mongodb://localhost:27017';
+const uri = 'mongodb+srv://royr55601:royr55601@cluster0.xra8inl.mongodb.net';
 const dbName = 'medspa';
 const collectionName = 'users';
 

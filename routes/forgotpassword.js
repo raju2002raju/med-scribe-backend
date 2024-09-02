@@ -117,9 +117,8 @@ router.post('/reset-password', async (req, res) => {
   if (otpStorage[email].otp === otp && otpStorage[email].expiry > Date.now()) {
     try {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      const usersCollection = getUsersCollection();
 
-      const result = await usersCollection.updateOne(
+      const result = await User.updateOne(
         { email },
         { $set: { password: hashedPassword } }
       );
@@ -151,11 +150,15 @@ router.post('/reset-password-setting', async (req, res) => {
       return res.status(400).json({ message: 'Email, old password, and new password are required.' });
     }
 
+    console.log('Request body:', req.body);
+
     const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
+
+    console.log('User found:', user);
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
 
@@ -171,10 +174,11 @@ router.post('/reset-password-setting', async (req, res) => {
 
     res.status(200).json({ message: 'Password updated successfully.' });
   } catch (error) {
-    console.error('Error in reset-password-setting:', error);
+    console.error('Error in reset-password-setting:', error.message);
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
+
 
 
 router.post('/resend-otp', async (req, res) => {
@@ -188,7 +192,7 @@ router.post('/resend-otp', async (req, res) => {
   const newOtp = crypto.randomInt(100000, 999999).toString();
   otpStorage[email] = {
     otp: newOtp,
-    expiry: Date.now() + 10 * 60 * 1000, // OTP expires in 10 minutes
+    expiry: Date.now() + 10 * 60 * 1000, 
   };
 
   console.log(`New OTP generated for ${email}: ${newOtp}`);
