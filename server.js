@@ -16,7 +16,7 @@ app.use('/files', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware
 app.use(cors({
-    origin: 'https://med-scribe-front-end.vercel.app/', // Specify your frontend origin
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true // Allow cookies and other credentials to be sent
 }));
