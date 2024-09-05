@@ -31,6 +31,7 @@ const connectToDatabase = async () => {
 
     database = mongoClient.db("medspa");
     usersCollection = database.collection("users");
+    const users = await usersCollection.find().toArray();
     appointmentsCollection = database.collection("appointments");
     clientDataCollection = database.collection("clientdatas");
   } catch (error) {

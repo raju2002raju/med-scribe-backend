@@ -2,13 +2,19 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 
+let customPrompt = ''; // Initialize the custom prompt variable
+
 const updateEnvFile = () => {
-    const envContent = `OPENAI_API_KEY=${process.env.OPENAI_API_KEY}\nPROMPT=${customPrompt}\n`;
+    const envContent = `OPENAI_API_KEY=${process.env.OPENAI_API_KEY || ''}\nPROMPT=${customPrompt || ''}\n`;
     fs.writeFileSync('.env', envContent);
 };
 
 router.post('/api/update-open-ai-api-key', (req, res) => {
     const { openAiApiKey } = req.body;
+    if (!openAiApiKey) {
+        return res.status(400).json({ error: 'Open AI API key is required' });
+    }
+
     try {
         process.env.OPENAI_API_KEY = openAiApiKey;
         updateEnvFile();
@@ -25,6 +31,10 @@ router.get('/api/get-open-ai-api-key', (req, res) => {
 
 router.post('/api/update-prompt', (req, res) => {
     const { prompt } = req.body;
+    if (!prompt) {
+        return res.status(400).json({ error: 'Prompt is required' });
+    }
+
     try {
         customPrompt = prompt;
         process.env.PROMPT = prompt;

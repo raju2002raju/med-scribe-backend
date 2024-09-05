@@ -6,6 +6,7 @@ const cors = require('cors');
 const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const userRouter = require('./models/user'); 
 
 const { connectToDatabase} = require('./utils/database'); 
 
@@ -14,7 +15,10 @@ const port = process.env.PORT || 8080;
 app.use('/files', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000', // Specify your frontend origin
+    credentials: true // Allow cookies and other credentials to be sent
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -42,6 +46,7 @@ connectToDatabase()
         app.use('/language', languageRoutes);
         app.use('/api', resetPasswordRoutes);
         app.use('/profile', profileUpdate)
+        app.use('/auths', userRouter);
 
         // Error handling middleware
         app.use((err, req, res, next) => {

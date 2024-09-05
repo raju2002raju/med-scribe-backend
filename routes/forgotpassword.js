@@ -4,8 +4,6 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
-const jwt = require('jsonwebtoken');
-const { getUsersCollection } = require('../utils/database');
 
 let otpStorage = {};
 
@@ -17,7 +15,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Middleware to log request details
 router.use((req, res, next) => {
   console.log('--------------------');
   console.log('New request received:');
@@ -90,8 +87,11 @@ router.post('/verify-otp', (req, res) => {
 router.post('/reset-password', async (req, res) => {
   console.log('Reset password route hit');
   console.log('Request body:', req.body);
-  
-  const { email, otp, newPassword } = req.body;
+
+  let { email, otp, newPassword } = req.body; // Destructure email, otp, and newPassword
+
+  // Remove commas from OTP
+  otp = otp.replace(/,/g, ''); // Remove all commas from OTP
 
   console.log('Parsed data:', { 
     email: email || 'undefined', 
@@ -142,15 +142,18 @@ router.post('/reset-password', async (req, res) => {
 });
 
 
+
+
 router.post('/reset-password-setting', async (req, res) => {
   try {
-    const { email, oldPassword, newPassword } = req.body;
-
+    const { oldPassword, newPassword } = req.body;
+    const email = req.headers['user-email']; 
     if (!email || !oldPassword || !newPassword) {
       return res.status(400).json({ message: 'Email, old password, and new password are required.' });
     }
 
     console.log('Request body:', req.body);
+    console.log('Email from header:', email);
 
     const user = await User.findOne({ email });
 
@@ -178,6 +181,7 @@ router.post('/reset-password-setting', async (req, res) => {
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
+
 
 
 

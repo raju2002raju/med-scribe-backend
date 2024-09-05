@@ -1,30 +1,43 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const User = require('../models/user'); 
+const User = require('../models/user');
+const cloudinary = require('../routes/cloudinaryConfig'); // Import the configured Cloudinary instance
 
-// Define storage for multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
+const upload = multer({ storage: multer.memoryStorage() });
 
-const upload = multer({ storage: storage });
 
-// Profile update route
 router.post('/update', upload.single('profileImage'), async (req, res) => {
-  const { name, email, phone } = req.body;
-  const profileImage = req.file ? req.file.filename : null;
+  const { name, phone, email: profileEmail } = req.body; // Extract new email from the request body
+  const originalEmail = req.headers['user-email']; // Extract original email from the headers
 
   try {
-  
+    let profileImageUrl = null;
+
+    // Check if a new profile image is uploaded
+    if (req.file) {
+      const uploadToCloudinary = new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { folder: 'profile_images' },
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+
+        uploadStream.end(req.file.buffer);
+      });
+
+      const result = await uploadToCloudinary;
+      profileImageUrl = result.secure_url;
+    }
+
     const user = await User.findOneAndUpdate(
-      { email: email }, 
-      { name, phone, profileImage },
+      { email: originalEmail },
+      { name, phone, email: profileEmail, profileImage: profileImageUrl },
       { new: true }
     );
 
@@ -38,5 +51,6 @@ router.post('/update', upload.single('profileImage'), async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
 
 module.exports = router;
