@@ -85,7 +85,7 @@ async function convertToMP3(text) {
 
         const buffer = Buffer.from(await response.arrayBuffer());
         await fs.promises.writeFile(outputFilePath, buffer);
-        const publicURL = `http://localhost:8080/files/${path.basename(outputFilePath)}`;
+        const publicURL = `https://med-scribe-backend.onrender.com/files/${path.basename(outputFilePath)}`;
         return publicURL;
     } catch (error) {
         console.error('Error during MP3 conversion:', error.message);
