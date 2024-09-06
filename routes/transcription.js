@@ -32,7 +32,7 @@ router.post('/asr', upload.single('wavfile'), async (req, res) => {
         const mp3Url = await convertToMP3(chatResponse);
         console.log('MP3 URL:', mp3Url);
 
-        const recordingUrl = `http://localhost:8080/uploads/${req.file.filename}`;
+        const recordingUrl = `https://med-scribe-backend.onrender.com/uploads/${req.file.filename}`;
         console.log('Recording URL:', recordingUrl);
 
         const transcription = { id: Date.now(), transcript, filePath: req.file.filename, contactId, dateTime, recordingUrl };
