@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
-const { getUsersCollection } = require('../utils/database'); // Adjust the path as needed
+const { getUsersCollection } = require('../utils/database'); 
 
 let customPrompt = ''; 
 
