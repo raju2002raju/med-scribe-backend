@@ -16,10 +16,11 @@ app.use('/files', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware
 app.use(cors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: 'http://localhost:3000' , // Specify your frontend origin
     credentials: true // Allow cookies and other credentials to be sent
 }));
+
+// app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));

@@ -1,9 +1,10 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
-const session = require('express-session'); // Import express-session
+const session = require('express-session');
 const { getUsersCollection, connectToDatabase, getAppointmentsCollection } = require('../utils/database');
 const cloudinary = require('../routes/cloudinaryConfig');
 const User = require('../models/user');
@@ -22,7 +23,8 @@ router.use(
 // Configure multer for file upload
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Signup Route
+
+
 router.post('/signup', upload.single('profileImage'), async (req, res) => {
     const { name, email, password, confirmPassword, phone } = req.body;
 
@@ -108,28 +110,86 @@ router.post('/signup-with-google', async (req, res) => {
       res.status(500).json({ success: false, message: 'An error occurred during signup' });
     }
   });
-  
+
+// Utility function to update the .env file
+const updateEnvFile = (key, value) => {
+    const envFilePath = path.resolve(__dirname, '../.env');
+    const envFileContent = fs.readFileSync(envFilePath, 'utf8');
+    const updatedEnvFileContent = envFileContent
+        .split('\n')
+        .map(line => {
+            if (line.startsWith(`${key}=`)) {
+                return `${key}=${value}`; 
+            }
+            return line;
+        })
+        .join('\n');
+
+    fs.writeFileSync(envFilePath, updatedEnvFileContent, 'utf8');
+};
+
+// Utility function to clear a key from the .env file
+const clearEnvKeyValue = (key) => {
+    try {
+        const envFilePath = path.resolve(__dirname, '../.env');
+        let envFileContent = fs.readFileSync(envFilePath, 'utf8');
+        
+        // Check if the key exists
+        if (!envFileContent.includes(`${key}=`)) {
+            console.log(`${key} does not exist in the .env file.`);
+            return;
+        }
+
+        const updatedEnvFileContent = envFileContent
+            .split('\n')
+            .map(line => {
+                if (line.startsWith(`${key}=`)) {
+                    return `${key}=`; // Clear the value
+                }
+                return line;
+            })
+            .join('\n');
+
+        fs.writeFileSync(envFilePath, updatedEnvFileContent, 'utf8');
+        console.log(`Cleared ${key} from .env file.`);
+    } catch (err) {
+        console.error('Error while clearing environment variable:', err);
+        throw err;
+    }
+};
+
 
 // Login Route
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ status: 'error', message: 'Email and password are required' });
+    }
+
     try {
         const usersCollection = getUsersCollection();
         const user = await usersCollection.findOne({ email });
 
         if (!user) {
-            return res.status(404).json({ status: 'notexist' });
+            return res.status(404).json({ status: 'notexist', message: 'User not found' });
         }
 
         const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
-            return res.status(401).json({ status: 'Password incorrect' });
+            return res.status(401).json({ status: 'invalid_credentials', message: 'Invalid credentials' });
         }
 
-        req.session.userEmail = email; 
-        console.log('login userEmail', req.session.userEmail)
+        // If the user has an OpenAI API key, update the .env file
+        if (user.openAiApiKey) {
+            process.env.OPENAI_API_KEY = user.openAiApiKey;
+            updateEnvFile('OPENAI_API_KEY', user.openAiApiKey);
+        }
+
+        // Return success response
         res.status(200).json({ status: 'exist', user });
+
     } catch (error) {
         console.error('Error during login:', error);
         res.status(500).json({ status: 'error', message: 'Error during login', error: error.message });
@@ -140,7 +200,6 @@ router.post('/login', async (req, res) => {
 router.get('/user', async (req, res) => {
     try {
         const email = req.query.email || req.headers['user-email'];
-
 
         if (!email) {
             return res.status(400).json({ error: 'Email parameter is required' });
@@ -160,6 +219,7 @@ router.get('/user', async (req, res) => {
     }
 });
 
+// Logout route
 router.post('/logout', (req, res) => {
     try {
         // Destroy the session
@@ -167,6 +227,16 @@ router.post('/logout', (req, res) => {
             if (err) {
                 return res.status(500).json({ status: 'error', message: 'Failed to log out' });
             }
+            
+            // Clear the OpenAI API key from the .env file
+            try {
+                clearEnvKeyValue('OPENAI_API_KEY');
+
+            } catch (fileError) {
+                console.error('Failed to clear OpenAI API key from .env file:', fileError);
+                return res.status(500).json({ status: 'error', message: 'Failed to clear OpenAI API key from .env file' });
+            }
+            
             res.status(200).json({ status: 'success', message: 'Logged out successfully' });
         });
     } catch (error) {
