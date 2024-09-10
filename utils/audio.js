@@ -8,6 +8,8 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const { getAppointmentsCollection, getClientDataCollection, connectToDatabase} = require('../utils/database');
 const { getLanguages } = require('../utils/languageUtils');
 
+
+
 async function transcribeAudio(filePath) {
     const formData = new FormData();
     formData.append('file', fs.createReadStream(filePath));
@@ -85,7 +87,12 @@ async function convertToMP3(text) {
 
         const buffer = Buffer.from(await response.arrayBuffer());
         await fs.promises.writeFile(outputFilePath, buffer);
+
+        // Ensure the file exists
+        console.log(`File saved to ${outputFilePath}`);
+
         const publicURL = `https://med-scribe-backend.onrender.com/files/${path.basename(outputFilePath)}`;
+        console.log(`Public URL: ${publicURL}`);
         return publicURL;
     } catch (error) {
         console.error('Error during MP3 conversion:', error.message);
