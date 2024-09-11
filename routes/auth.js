@@ -86,9 +86,12 @@ router.post('/signup-with-google', async (req, res) => {
       const existingUser = await usersCollection.findOne({ email });
   
       if (existingUser) {
-        return res.status(200).json({ success: false, message: 'User already exists' });
+        // User exists, log them in
+        req.session.userEmail = email; 
+        return res.status(200).json({ success: true, message: 'User logged in successfully', data: existingUser });
       }
   
+      // User does not exist, create a new user
       const newUser = {
         name,
         email,
@@ -99,15 +102,16 @@ router.post('/signup-with-google', async (req, res) => {
       const insertedUser = await usersCollection.findOne({ _id: result.insertedId });
   
       const { password: _, ...userWithoutPassword } = insertedUser;
-      req.session.userEmail = email;
-      console.log('signup userEmail', req.session.userEmail); // Store email in session
-      return res.status(200).json({ success: true, data: userWithoutPassword });
+      req.session.userEmail = email; 
+      console.log('Signup userEmail', req.session.userEmail);
+      return res.status(200).json({ success: true, message: 'User signed up successfully', data: userWithoutPassword });
   
     } catch (error) {
       console.error('Error during signup with Google:', error);
       res.status(500).json({ success: false, message: 'An error occurred during signup' });
     }
   });
+  
   
 
 // Login Route

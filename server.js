@@ -16,7 +16,7 @@ app.use('/files', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware
 app.use(cors({
-    origin: '*' , // Specify your frontend origin
+    origin: 'http://localhost:3000' , // Specify your frontend origin
     credentials: true // Allow cookies and other credentials to be sent
 }));
 
